@@ -33,11 +33,11 @@ public class BleConnector {
 
     private static final String UUID_CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
 
-    private BluetoothGatt mBluetoothGatt;
+    private final BluetoothGatt mBluetoothGatt;
     private BluetoothGattService mGattService;
     private BluetoothGattCharacteristic mCharacteristic;
-    private BleBluetooth mBleBluetooth;
-    private Handler mHandler;
+    private final BleBluetooth mBleBluetooth;
+    private final Handler mHandler;
 
     BleConnector(BleBluetooth bleBluetooth) {
         this.mBleBluetooth = bleBluetooth;
@@ -486,8 +486,6 @@ public class BleConnector {
         return false;
     }
 
-
-    /**************************************** Handle call back ******************************************/
 
     /**
      * notify

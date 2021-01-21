@@ -32,9 +32,9 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     private long mScanTimeout;
     private BleScanPresenterImp mBleScanPresenterImp;
 
-    private List<BleDevice> mBleDeviceList = new ArrayList<>();
+    private final List<BleDevice> mBleDeviceList = new ArrayList<>();
 
-    private Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private HandlerThread mHandlerThread;
     private Handler mHandler;
     private boolean mHandling;
@@ -63,12 +63,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
     }
 
     private void handleResult(final BleDevice bleDevice) {
-        mMainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                onLeScan(bleDevice);
-            }
-        });
+        mMainHandler.post(() -> onLeScan(bleDevice));
         checkDevice(bleDevice);
     }
 
@@ -148,12 +143,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                     + "  scanRecord:" + HexUtil.formatHexString(bleDevice.getScanRecord()));
 
             mBleDeviceList.add(bleDevice);
-            mMainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    BleScanner.getInstance().stopLeScan();
-                }
-            });
+            mMainHandler.post(() -> BleScanner.getInstance().stopLeScan());
 
         } else {
             AtomicBoolean hasFound = new AtomicBoolean(false);
@@ -170,12 +160,7 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
                         + "  scanRecord: " + HexUtil.formatHexString(bleDevice.getScanRecord(), true));
 
                 mBleDeviceList.add(bleDevice);
-                mMainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onScanning(bleDevice);
-                    }
-                });
+                mMainHandler.post(() -> onScanning(bleDevice));
             }
         }
     }
@@ -186,33 +171,20 @@ public abstract class BleScanPresenter implements BluetoothAdapter.LeScanCallbac
         removeHandlerMsg();
 
         if (success && mScanTimeout > 0) {
-            mMainHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    BleScanner.getInstance().stopLeScan();
-                }
-            }, mScanTimeout);
+            mMainHandler.postDelayed(() -> BleScanner.getInstance().stopLeScan(), mScanTimeout);
         }
 
-        mMainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                onScanStarted(success);
-            }
-        });
+        mMainHandler.post(() -> onScanStarted(success));
     }
 
     public final void notifyScanStopped() {
         mHandling = false;
         mHandlerThread.quit();
         removeHandlerMsg();
-        mMainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                onScanFinished(mBleDeviceList);
-                //czh add  修复stopScan之后内存泄漏问题！外部如果使用匿名类设置的监听引起的内存泄漏
-                mBleScanPresenterImp=null;
-            }
+        mMainHandler.post(() -> {
+            onScanFinished(mBleDeviceList);
+            //czh add  修复stopScan之后内存泄漏问题！外部如果使用匿名类设置的监听引起的内存泄漏
+            mBleScanPresenterImp=null;
         });
     }
 

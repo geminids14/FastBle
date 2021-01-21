@@ -41,16 +41,16 @@ public class BleBluetooth {
     private BleGattCallback bleGattCallback;
     private BleRssiCallback bleRssiCallback;
     private BleMtuChangedCallback bleMtuChangedCallback;
-    private HashMap<String, BleNotifyCallback> bleNotifyCallbackHashMap = new HashMap<>();
-    private HashMap<String, BleIndicateCallback> bleIndicateCallbackHashMap = new HashMap<>();
-    private HashMap<String, BleWriteCallback> bleWriteCallbackHashMap = new HashMap<>();
-    private HashMap<String, BleReadCallback> bleReadCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleNotifyCallback> bleNotifyCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleIndicateCallback> bleIndicateCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleWriteCallback> bleWriteCallbackHashMap = new HashMap<>();
+    private final HashMap<String, BleReadCallback> bleReadCallbackHashMap = new HashMap<>();
 
     private LastState lastState;
     private boolean isActiveDisconnect = false;
-    private BleDevice bleDevice;
+    private final BleDevice bleDevice;
     private BluetoothGatt bluetoothGatt;
-    private MainHandler mainHandler = new MainHandler(Looper.getMainLooper());
+    private final MainHandler mainHandler = new MainHandler(Looper.getMainLooper());
     private int connectRetryCount = 0;
 
     public BleBluetooth(BleDevice bleDevice) {
@@ -86,23 +86,19 @@ public class BleBluetooth {
     }
 
     public synchronized void removeNotifyCallback(String uuid) {
-        if (bleNotifyCallbackHashMap.containsKey(uuid))
-            bleNotifyCallbackHashMap.remove(uuid);
+        bleNotifyCallbackHashMap.remove(uuid);
     }
 
     public synchronized void removeIndicateCallback(String uuid) {
-        if (bleIndicateCallbackHashMap.containsKey(uuid))
-            bleIndicateCallbackHashMap.remove(uuid);
+        bleIndicateCallbackHashMap.remove(uuid);
     }
 
     public synchronized void removeWriteCallback(String uuid) {
-        if (bleWriteCallbackHashMap.containsKey(uuid))
-            bleWriteCallbackHashMap.remove(uuid);
+        bleWriteCallbackHashMap.remove(uuid);
     }
 
     public synchronized void removeReadCallback(String uuid) {
-        if (bleReadCallbackHashMap.containsKey(uuid))
-            bleReadCallbackHashMap.remove(uuid);
+        bleReadCallbackHashMap.remove(uuid);
     }
 
     public synchronized void clearCharacterCallback() {
@@ -359,7 +355,7 @@ public class BleBluetooth {
         }
     }
 
-    private BluetoothGattCallback coreGattCallback = new BluetoothGattCallback() {
+    private final BluetoothGattCallback coreGattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -405,35 +401,30 @@ public class BleBluetooth {
 
             bluetoothGatt = gatt;
 
+            Message message = mainHandler.obtainMessage();
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Message message = mainHandler.obtainMessage();
                 message.what = BleMsg.MSG_DISCOVER_SUCCESS;
                 message.obj = new BleConnectStateParameter(status);
-                mainHandler.sendMessage(message);
 
             } else {
-                Message message = mainHandler.obtainMessage();
                 message.what = BleMsg.MSG_DISCOVER_FAIL;
-                mainHandler.sendMessage(message);
             }
+            mainHandler.sendMessage(message);
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
 
-            Iterator iterator = bleNotifyCallbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object callback = entry.getValue();
+            while (bleNotifyCallbackHashMap.entrySet().iterator().hasNext()) {
+                BleNotifyCallback callback = bleNotifyCallbackHashMap.entrySet().iterator().next().getValue();
                 if (callback instanceof BleNotifyCallback) {
-                    BleNotifyCallback bleNotifyCallback = (BleNotifyCallback) callback;
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(bleNotifyCallback.getKey())) {
-                        Handler handler = bleNotifyCallback.getHandler();
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(callback.getKey())) {
+                        Handler handler = callback.getHandler();
                         if (handler != null) {
                             Message message = handler.obtainMessage();
                             message.what = BleMsg.MSG_CHA_NOTIFY_DATA_CHANGE;
-                            message.obj = bleNotifyCallback;
+                            message.obj = callback;
                             Bundle bundle = new Bundle();
                             bundle.putByteArray(BleMsg.KEY_NOTIFY_BUNDLE_VALUE, characteristic.getValue());
                             message.setData(bundle);
@@ -443,18 +434,15 @@ public class BleBluetooth {
                 }
             }
 
-            iterator = bleIndicateCallbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object callback = entry.getValue();
+            while (bleIndicateCallbackHashMap.entrySet().iterator().hasNext()) {
+                BleIndicateCallback callback = bleIndicateCallbackHashMap.entrySet().iterator().next().getValue();
                 if (callback instanceof BleIndicateCallback) {
-                    BleIndicateCallback bleIndicateCallback = (BleIndicateCallback) callback;
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(bleIndicateCallback.getKey())) {
-                        Handler handler = bleIndicateCallback.getHandler();
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(callback.getKey())) {
+                        Handler handler = callback.getHandler();
                         if (handler != null) {
                             Message message = handler.obtainMessage();
                             message.what = BleMsg.MSG_CHA_INDICATE_DATA_CHANGE;
-                            message.obj = bleIndicateCallback;
+                            message.obj = callback;
                             Bundle bundle = new Bundle();
                             bundle.putByteArray(BleMsg.KEY_INDICATE_BUNDLE_VALUE, characteristic.getValue());
                             message.setData(bundle);
@@ -469,18 +457,15 @@ public class BleBluetooth {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
 
-            Iterator iterator = bleNotifyCallbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object callback = entry.getValue();
+            while (bleNotifyCallbackHashMap.entrySet().iterator().hasNext()) {
+                BleNotifyCallback callback = bleNotifyCallbackHashMap.entrySet().iterator().next().getValue();
                 if (callback instanceof BleNotifyCallback) {
-                    BleNotifyCallback bleNotifyCallback = (BleNotifyCallback) callback;
-                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(bleNotifyCallback.getKey())) {
-                        Handler handler = bleNotifyCallback.getHandler();
+                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(callback.getKey())) {
+                        Handler handler = callback.getHandler();
                         if (handler != null) {
                             Message message = handler.obtainMessage();
                             message.what = BleMsg.MSG_CHA_NOTIFY_RESULT;
-                            message.obj = bleNotifyCallback;
+                            message.obj = callback;
                             Bundle bundle = new Bundle();
                             bundle.putInt(BleMsg.KEY_NOTIFY_BUNDLE_STATUS, status);
                             message.setData(bundle);
@@ -490,18 +475,15 @@ public class BleBluetooth {
                 }
             }
 
-            iterator = bleIndicateCallbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object callback = entry.getValue();
+            while (bleIndicateCallbackHashMap.entrySet().iterator().hasNext()) {
+                BleIndicateCallback callback =  bleIndicateCallbackHashMap.entrySet().iterator().next().getValue();
                 if (callback instanceof BleIndicateCallback) {
-                    BleIndicateCallback bleIndicateCallback = (BleIndicateCallback) callback;
-                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(bleIndicateCallback.getKey())) {
-                        Handler handler = bleIndicateCallback.getHandler();
+                    if (descriptor.getCharacteristic().getUuid().toString().equalsIgnoreCase(callback.getKey())) {
+                        Handler handler = callback.getHandler();
                         if (handler != null) {
                             Message message = handler.obtainMessage();
                             message.what = BleMsg.MSG_CHA_INDICATE_RESULT;
-                            message.obj = bleIndicateCallback;
+                            message.obj = callback;
                             Bundle bundle = new Bundle();
                             bundle.putInt(BleMsg.KEY_INDICATE_BUNDLE_STATUS, status);
                             message.setData(bundle);
@@ -516,18 +498,15 @@ public class BleBluetooth {
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
 
-            Iterator iterator = bleWriteCallbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object callback = entry.getValue();
+            for (Map.Entry<String, BleWriteCallback> stringBleWriteCallbackEntry : bleWriteCallbackHashMap.entrySet()) {
+                BleWriteCallback callback = stringBleWriteCallbackEntry.getValue();
                 if (callback instanceof BleWriteCallback) {
-                    BleWriteCallback bleWriteCallback = (BleWriteCallback) callback;
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(bleWriteCallback.getKey())) {
-                        Handler handler = bleWriteCallback.getHandler();
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(callback.getKey())) {
+                        Handler handler = callback.getHandler();
                         if (handler != null) {
                             Message message = handler.obtainMessage();
                             message.what = BleMsg.MSG_CHA_WRITE_RESULT;
-                            message.obj = bleWriteCallback;
+                            message.obj = callback;
                             Bundle bundle = new Bundle();
                             bundle.putInt(BleMsg.KEY_WRITE_BUNDLE_STATUS, status);
                             bundle.putByteArray(BleMsg.KEY_WRITE_BUNDLE_VALUE, characteristic.getValue());
@@ -543,18 +522,15 @@ public class BleBluetooth {
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
 
-            Iterator iterator = bleReadCallbackHashMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                Object callback = entry.getValue();
+            for (Map.Entry<String, BleReadCallback> stringBleReadCallbackEntry : bleReadCallbackHashMap.entrySet()) {
+                BleReadCallback callback = stringBleReadCallbackEntry.getValue();
                 if (callback instanceof BleReadCallback) {
-                    BleReadCallback bleReadCallback = (BleReadCallback) callback;
-                    if (characteristic.getUuid().toString().equalsIgnoreCase(bleReadCallback.getKey())) {
-                        Handler handler = bleReadCallback.getHandler();
+                    if (characteristic.getUuid().toString().equalsIgnoreCase(callback.getKey())) {
+                        Handler handler = callback.getHandler();
                         if (handler != null) {
                             Message message = handler.obtainMessage();
                             message.what = BleMsg.MSG_CHA_READ_RESULT;
-                            message.obj = bleReadCallback;
+                            message.obj = callback;
                             Bundle bundle = new Bundle();
                             bundle.putInt(BleMsg.KEY_READ_BUNDLE_STATUS, status);
                             bundle.putByteArray(BleMsg.KEY_READ_BUNDLE_VALUE, characteristic.getValue());

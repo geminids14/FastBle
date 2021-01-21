@@ -30,7 +30,7 @@ public class OperationActivity extends AppCompatActivity implements Observer {
     private int charaProp;
 
     private Toolbar toolbar;
-    private List<Fragment> fragments = new ArrayList<>();
+    private final List<Fragment> fragments = new ArrayList<>();
     private int currentPage = 0;
     private String[] titles = new String[3];
 

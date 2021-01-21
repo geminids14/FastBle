@@ -19,8 +19,8 @@ import java.util.List;
 
 public class DeviceAdapter extends BaseAdapter {
 
-    private Context context;
-    private List<BleDevice> bleDeviceList;
+    private final Context context;
+    private final List<BleDevice> bleDeviceList;
 
     public DeviceAdapter(Context context) {
         this.context = context;
@@ -155,7 +155,7 @@ public class DeviceAdapter extends BaseAdapter {
         return convertView;
     }
 
-    class ViewHolder {
+    static class ViewHolder {
         ImageView img_blue;
         TextView txt_name;
         TextView txt_mac;

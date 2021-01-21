@@ -37,9 +37,7 @@ public class MultipleBluetoothController {
         if (bleBluetooth == null) {
             return;
         }
-        if (bleTempHashMap.containsKey(bleBluetooth.getDeviceKey())) {
-            bleTempHashMap.remove(bleBluetooth.getDeviceKey());
-        }
+        bleTempHashMap.remove(bleBluetooth.getDeviceKey());
     }
 
     public synchronized void addBleBluetooth(BleBluetooth bleBluetooth) {
@@ -55,9 +53,7 @@ public class MultipleBluetoothController {
         if (bleBluetooth == null) {
             return;
         }
-        if (bleLruHashMap.containsKey(bleBluetooth.getDeviceKey())) {
-            bleLruHashMap.remove(bleBluetooth.getDeviceKey());
-        }
+        bleLruHashMap.remove(bleBluetooth.getDeviceKey());
     }
 
     public synchronized boolean isContainDevice(BleDevice bleDevice) {
@@ -103,12 +99,7 @@ public class MultipleBluetoothController {
 
     public synchronized List<BleBluetooth> getBleBluetoothList() {
         List<BleBluetooth> bleBluetoothList = new ArrayList<>(bleLruHashMap.values());
-        Collections.sort(bleBluetoothList, new Comparator<BleBluetooth>() {
-            @Override
-            public int compare(BleBluetooth lhs, BleBluetooth rhs) {
-                return lhs.getDeviceKey().compareToIgnoreCase(rhs.getDeviceKey());
-            }
-        });
+        Collections.sort(bleBluetoothList, (lhs, rhs) -> lhs.getDeviceKey().compareToIgnoreCase(rhs.getDeviceKey()));
         return bleBluetoothList;
     }
 

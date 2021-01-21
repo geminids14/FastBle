@@ -71,8 +71,8 @@ public class ServiceListFragment extends Fragment {
 
     private class ResultAdapter extends BaseAdapter {
 
-        private Context context;
-        private List<BluetoothGattService> bluetoothGattServices;
+        private final Context context;
+        private final List<BluetoothGattService> bluetoothGattServices;
 
         ResultAdapter(Context context) {
             this.context = context;

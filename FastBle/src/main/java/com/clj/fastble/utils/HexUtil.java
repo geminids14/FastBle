@@ -50,8 +50,8 @@ public class HexUtil {
         if (data == null || data.length < 1)
             return null;
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < data.length; i++) {
-            String hex = Integer.toHexString(data[i] & 0xFF);
+        for (byte datum : data) {
+            String hex = Integer.toHexString(datum & 0xFF);
             if (hex.length() == 1) {
                 hex = '0' + hex;
             }

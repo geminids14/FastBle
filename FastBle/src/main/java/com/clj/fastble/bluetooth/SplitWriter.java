@@ -17,8 +17,8 @@ import java.util.Queue;
 
 public class SplitWriter {
 
-    private HandlerThread mHandlerThread;
-    private Handler mHandler;
+    private final HandlerThread mHandlerThread;
+    private final Handler mHandler;
 
     private BleBluetooth mBleBluetooth;
     private String mUuid_service;
@@ -160,7 +160,7 @@ public class SplitWriter {
         if (data.length % count == 0) {
             pkgCount = data.length / count;
         } else {
-            pkgCount = Math.round(data.length / count + 1);
+            pkgCount = Math.round((float)data.length / count + 1);
         }
 
         if (pkgCount > 0) {

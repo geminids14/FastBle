@@ -30,7 +30,7 @@ public class BleScanner {
 
     private BleScanState mBleScanState = BleScanState.STATE_IDLE;
 
-    private BleScanPresenter mBleScanPresenter = new BleScanPresenter() {
+    private final BleScanPresenter mBleScanPresenter = new BleScanPresenter() {
 
         @Override
         public void onScanStarted(boolean success) {
@@ -78,12 +78,7 @@ public class BleScanner {
                         callback.onScanFinished(bleDeviceList.get(0));
                     }
                     final List<BleDevice> list = bleDeviceList;
-                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            BleManager.getInstance().connect(list.get(0), callback);
-                        }
-                    }, 100);
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> BleManager.getInstance().connect(list.get(0), callback), 100);
                 }
             } else {
                 BleScanCallback callback = (BleScanCallback) mBleScanPresenter.getBleScanPresenterImp();

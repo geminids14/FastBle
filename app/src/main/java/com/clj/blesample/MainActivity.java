@@ -24,11 +24,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView txt_setting;
     private Button btn_scan;
     private EditText et_name, et_mac, et_uuid;
-    private Switch sw_auto;
+    private SwitchCompat sw_auto;
     private ImageView img_loading;
 
     private Animation operatingAnim;
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_name = (EditText) findViewById(R.id.et_name);
         et_mac = (EditText) findViewById(R.id.et_mac);
         et_uuid = (EditText) findViewById(R.id.et_uuid);
-        sw_auto = (Switch) findViewById(R.id.sw_auto);
+        sw_auto = (SwitchCompat) findViewById(R.id.sw_auto);
 
         layout_setting = (LinearLayout) findViewById(R.id.layout_setting);
         txt_setting = (TextView) findViewById(R.id.txt_setting);

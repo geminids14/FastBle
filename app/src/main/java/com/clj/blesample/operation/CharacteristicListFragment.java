@@ -100,8 +100,8 @@ public class CharacteristicListFragment extends Fragment {
 
     private class ResultAdapter extends BaseAdapter {
 
-        private Context context;
-        private List<BluetoothGattCharacteristic> characteristicList;
+        private final Context context;
+        private final List<BluetoothGattCharacteristic> characteristicList;
 
         ResultAdapter(Context context) {
             this.context = context;
